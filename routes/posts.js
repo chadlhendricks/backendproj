@@ -2,8 +2,13 @@ const router = require("express").Router();
 const Post = require("../models/Post");
 const User = require("../models/User");
 
-router.get("/", (req, res) => {
-  res.send("Post Route")
+router.get("/", async (req, res) => {
+  try{
+    const posts = await Post.find();
+    res.send(posts)
+  } catch(e) {
+    res.status(500).json({message: "Server error on get posts"})
+  }
 })
 
 //create a post
