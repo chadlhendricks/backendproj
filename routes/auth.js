@@ -7,26 +7,55 @@ router.get("/", (req, res) => {
 })
 
 //REGISTER
-router.post("/register", async (req, res) => {
+// router.post("/register", async (req, res) => {
+//   try {
+//     //generate new password
+//     const salt = await bcrypt.genSalt(10);
+//     const hashedPassword = await bcrypt.hash(req.body.password, salt);
+
+//     //create new user
+//     const newUser = new User({
+//       username: req.body.username,
+//       email: req.body.email,
+//       password: hashedPassword,
+//     });
+
+//     //save user and respond
+//     const user = await newUser.save();
+//     res.status(200).json(user);
+//   } catch (err) {
+//     res.status(500).json(err)
+//   }
+// });
+
+router.post('/', async (req, res) => {
+
+  const{ username, email, password } = req.body;
+  const salt = await bcrypt.genSalt();
+  const hashedPassword = await bcrypt.hash(password, salt)
+
+     const user = new User({
+         username,
+         email,
+         password: hashedPassword,
+          
+     })
   try {
-    //generate new password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(req.body.password, salt);
+ const newUser = await user.save()
+ res.status(201).json(newUser);
 
-    //create new user
-    const newUser = new User({
-      username: req.body.username,
-      email: req.body.email,
-      password: hashedPassword,
-    });
-
-    //save user and respond
-    const user = await newUser.save();
-    res.status(200).json(user);
-  } catch (err) {
-    res.status(500).json(err)
-  }
-});
+ try{
+   const access_token = jwt.sign(
+     JSON.stringify(newUser),
+     process.env.SECRET_TOKEN
+   );
+ } catch (err){
+   res.status(500).json({ message: error.message });
+ }
+     } catch (err) {
+         res.status(400).json({ message:err.message})
+     }
+})
 
 //LOGIN
 router.post("/login", async (req, res) => {
@@ -42,5 +71,7 @@ router.post("/login", async (req, res) => {
     res.status(500).json(err)
   }
 });
+
+
 
 module.exports = router;
